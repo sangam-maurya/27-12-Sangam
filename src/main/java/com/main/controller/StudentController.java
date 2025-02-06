@@ -8,6 +8,7 @@ import com.main.service.StudentService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +28,7 @@ public class StudentController {
     public StudentController(StudentService service) {
         this.service = service;
     }
+//    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<String>createStudent(@Valid @RequestBody Student student){
         StudentDto student1 = service.createStudent(student);
@@ -36,6 +38,7 @@ public class StudentController {
             return new ResponseEntity<>("StudentDetail is null" , HttpStatus.BAD_REQUEST);
         }
     }
+    @PreAuthorize("hasAuthority('USER')")
     @GetMapping("/get")
     public List<StudentDto> getList(
             @RequestParam (value = "pageNo", defaultValue = "0" , required = false)int pageNo,
@@ -47,11 +50,15 @@ public class StudentController {
         List<StudentDto> allStu = service.getAllStu(pageNo , pageSize , sortBy , sortDir);
         return allStu;
     }
-    @GetMapping("/{id}")
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/ID/{id}")
     public ResponseEntity<StudentDto>getStudentById(@PathVariable long id){
         StudentDto byId = service.findById(id);
         return ResponseEntity.ok(byId);
     }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/update/{id}")
     public ResponseEntity<StudentDto>updateStudent(@PathVariable long id , @RequestBody Student student){
         StudentDto updated = service.updateStudentById(id, student);
@@ -68,5 +75,37 @@ public class StudentController {
         }else {
             return new ResponseEntity<>("Invalid Password" , HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<String>deleteById(@PathVariable long id){
+        service.deleteById(id);
+        return new ResponseEntity<>(id+" id is deleted  " , HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasAuthority('user')")
+    @GetMapping("/pagination")
+    public ResponseEntity<List<StudentDto>>getAllStu(
+            @RequestParam(value = "pageNo" , defaultValue = "0" , required = false)int pageNo,
+            @RequestParam(value = "pageSize" , defaultValue = "5" , required = false)int pageSize,
+            @RequestParam(value = "sortBy" , defaultValue = "id" , required = false)String sortBy,
+            @RequestParam(value = "sortDir" , defaultValue = "acs" , required = false)String sortDir
+
+            ){
+        List<StudentDto> student = service.getAllStudent(pageNo, pageSize , sortBy , sortDir);
+        return ResponseEntity.ok( student);
+    }
+
+    @GetMapping("/data/{id}")
+    public ResponseEntity<StudentDto>findId(@PathVariable long id){
+        StudentDto student = service.findStudent(id);
+        return new ResponseEntity<>(student , HttpStatus.OK);
+    }
+
+    @GetMapping("/name")
+    public ResponseEntity<StudentDto>getByName(@RequestParam String name){
+        StudentDto byName = service.findByName(name);
+        return new ResponseEntity<>(byName , HttpStatus.OK);
     }
 }

@@ -82,4 +82,31 @@ public class StudentService {
         Student save = studentRepository.save(student1);
         return mapper.map(save ,StudentDto.class);
     }
+
+    public void deleteById(long id){
+        Student student = studentRepository.findById(id).orElseThrow(() ->
+                new RuntimeException("id is not present"));
+        studentRepository.delete(student);
+    }
+    public List<StudentDto>getAllStudent(int pageNo , int pageSize , String sortBy , String sortDir){
+       Sort sort= sortBy.equalsIgnoreCase(Sort.Direction.ASC.name())?Sort.by(sortBy).ascending():
+                Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(pageNo , pageSize , sort);
+        Page<Student> list =  studentRepository.findAll(pageable);
+        List<StudentDto> students = list.stream().map(e-> mapper.map(e, StudentDto.class)).toList();
+        return students;
+    }
+    public StudentDto findStudent(long id){
+        Student student = studentRepository.findById(id)
+                .orElseThrow(()-> new RuntimeException("id is not present"));
+        StudentDto studentDto = mapper.map(student, StudentDto.class);
+        return studentDto;
+    }
+
+    public StudentDto findByName(String name){
+        Student student = studentRepository.findByName(name)
+                .orElseThrow(()-> new RuntimeException("name is not present"));
+       return mapper.map(student , StudentDto.class);
+    }
+
 }
