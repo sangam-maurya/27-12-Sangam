@@ -103,4 +103,10 @@ public class StudentService {
         return studentDto;
     }
 
+    public StudentDto findByName(String name){
+        Student student = studentRepository.findByName(name)
+                .orElseThrow(()-> new RuntimeException("name is not present"));
+       return mapper.map(student , StudentDto.class);
+    }
+
 }

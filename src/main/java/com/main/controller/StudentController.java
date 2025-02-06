@@ -102,4 +102,10 @@ public class StudentController {
         StudentDto student = service.findStudent(id);
         return new ResponseEntity<>(student , HttpStatus.OK);
     }
+
+    @GetMapping("/name")
+    public ResponseEntity<StudentDto>getByName(@RequestParam String name){
+        StudentDto byName = service.findByName(name);
+        return new ResponseEntity<>(byName , HttpStatus.OK);
+    }
 }
