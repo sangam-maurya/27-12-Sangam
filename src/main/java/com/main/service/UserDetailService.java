@@ -8,20 +8,28 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.Collections;
+
 @Service
-public class UserDetaitSer implements UserDetailsService {
+public class UserDetailService implements UserDetailsService {
+
     private final StudentRepository studentRepository;
 
-    public UserDetaitSer(StudentRepository studentRepository) {
+    public UserDetailService(StudentRepository studentRepository) {
         this.studentRepository = studentRepository;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Student student = studentRepository.findByUsername(username).orElseThrow(
-                ()-> new RuntimeException("username is not present " + username));
-        return new User(student.getUsername() , student.getPassword() ,new ArrayList<>());
+        // Find the student by username
+        Student student = studentRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Username not found: " + username));
 
+        // Return UserDetails object
+        return new User(
+                student.getUsername(),
+                student.getPassword(),
+                Collections.singletonList(() -> "ROLE_" + student.getRole())
+        );
     }
 }
